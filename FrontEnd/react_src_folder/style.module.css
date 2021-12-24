@@ -1,0 +1,86 @@
+@import url('https://fonts.googleapis.com/css?family=Roboto:400,700,900');
+
+body {
+    font-family: 'Roboto', Roboto;
+    margin:2% ;
+}
+
+.Top_Bar {    
+    width: 100%; 
+    text-align: center;
+}
+
+.logo_text{
+
+    font-size: 300%;
+}
+
+.wizard_logo_text{
+    color: rgb(13, 110, 253);
+}
+
+.help_text{
+    font-size: 120%;
+    margin: 2%;
+}
+
+.IngredientsSelector{
+    font-size: 220%;
+    display: inline-block;
+    width:90%
+}
+
+.MaxIngredientsSelectorContainer{
+    margin-top: 1%;
+    text-align: center;
+}
+
+.MaxIngredientsSelector{
+    -webkit-appearance: none;
+    width: 55%;
+    height: 15px;
+    border-radius: 5px;  
+    background: #d3d3d3;
+    outline: none;
+    opacity: 0.7;
+    -webkit-transition: .2s;
+    transition: opacity .2s;
+}
+
+.MaxIngredientsSelector::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 35px;
+    height: 35px;
+    border-radius: 50%; 
+    background: #04AA6D;
+    cursor: pointer;
+  }
+
+.Recipes_Area {
+    text-align: center;
+    margin:2%
+}
+
+.recipe  {
+    display: inline-block;
+    vertical-align: middle;
+    width: 250px;
+    margin:2%;
+    text-align: center;
+    background-color: #FFFFFF;
+    padding: 1%;
+ }
+
+.recipe_picture {
+    width:100%; 
+    height:auto; 
+    margin-bottom: 10px; 
+    border: 0px; 
+}
+
+.view_recipe_button{
+
+    margin: 3% ;
+}
+
