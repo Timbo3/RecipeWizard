@@ -1,4 +1,4 @@
-RecipeWizard helps you use up leftover ingredients in your fridge/cupboards by searching through recipe meta data for thousands of recipes based on the ingredients you enter. I created it as a project to learn more about several tools and programming languages inclusing Python, TDD, Linux, JMeter, JavaScript, HTML, CSS and React.
+RecipeWizard helps you use up leftover ingredients in your fridge/cupboards by searching through recipe meta data for thousands of recipes based on the ingredients you enter. I created it as a project to learn more about several tools and programming languages including Python, TDD, Linux, JMeter, JavaScript, HTML, CSS and React.
 
 There are two components ;
 
