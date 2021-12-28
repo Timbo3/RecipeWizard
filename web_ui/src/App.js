@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from "react";
-import Recipe from './Results';
+import {Card,Button} from 'react-bootstrap'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import {Form} from 'react-bootstrap'
 import style from './style.module.css';
@@ -20,7 +20,7 @@ function App() {
   }, []);
 
   const getvalidingredientapiresponse = async () => {
-    var apiresponse = await fetch(`http://192.168.0.24:8000/valid_ingredient_list/`)
+    var apiresponse = await fetch(`http://192.168.0.18:8000/valid_ingredient_list/`)
     const validingredientapiresponse = await apiresponse.json();
     setIngredients(validingredientapiresponse.Ingredients);
   }
@@ -44,13 +44,54 @@ function App() {
   }
 
   const getrecipeapiresponse = async () => {
-    var url = 'http://192.168.0.24:8000/search_recipes_by_ingredients/'+ingredients_query_string_for_api+"/"+users_maximum_ingredients
+    var url = 'http://192.168.0.18:8000/search_recipes_by_ingredients/'+ingredients_query_string_for_api+"/"+users_maximum_ingredients
     console.log('Attempting to get API response using URL '+url)
     var apiresponse = await fetch(url)
     const data = await apiresponse.json();
     setRecipes(data.Recipes);  
   }
 
+
+  const Recipe_result = ({title,ingredients,servings,method,image}) => {
+    ingredients = ingredients.replace(/<ingredient>/g, '')
+    ingredients = ingredients.replace(/<\/ingredient>/g, '. ')
+    method = method.replace(/\<step1>*/g, '1. ')
+    method = method.replace(/\<\/step1>*/g, '')
+    method = method.replace(/\<step2>*/g, ' 2. ')
+    method = method.replace(/\<\/step2>*/g, '')
+    method = method.replace(/\<step3>*/g, ' 3. ')
+    method = method.replace(/\<\/step3>*/g, '')
+    method = method.replace(/\<step4>*/g, ' 4. ')
+    method = method.replace(/\<\/step4>*/g, '')
+    method = method.replace(/\<step5>*/g, ' 5. ')
+    method = method.replace(/\<\/step5>*/g, '')
+    method = method.replace(/\<step6>*/g, ' 6. ')
+    method = method.replace(/\<\/step6>*/g, '')
+    method = method.replace(/\<step7>*/g, ' 7. ')
+    method = method.replace(/\<\/step7>*/g, '')
+    method = method.replace(/\<step8>*/g, ' 8. ')
+    method = method.replace(/\<\/step8>*/g, '')
+    method = method.replace(/\<step9>*/g, ' 9. ')
+    method = method.replace(/\<\/step9>*/g, '')
+    method = method.replace(/\<step10>*/g, ' 10. ')
+    method = method.replace(/\<\/step10>*/g, '')
+
+    return(
+        
+        <Card className={style.recipe}>          
+            <Card.Img className={style.recipe_picture} src={image}/>
+            <Card.Body>
+                <Card.Title>{title}</Card.Title>
+                <Card.Text><b>Ingredients: </b><i>{ingredients}</i></Card.Text>
+                <Card.Text><b>Serves: </b><i>{servings}</i></Card.Text>
+                <Card.Text><details><summary>Method</summary>{method}</details></Card.Text>
+            </Card.Body> 
+        </Card>
+
+    )
+  }
+
+  
   return (              
   <div className = "App">
     <section className = {style.Top_Bar}> 
@@ -84,16 +125,17 @@ function App() {
     </section>
     
     <section className = {style.Recipes_Area}> 
-      {recipe_results_from_api.map(recipe => (<Recipe 
+      {recipe_results_from_api.map(recipe => (<Recipe_result 
       key = {recipe['ID']} 
       title = {recipe['Title']} 
-      ingredients = {recipe['Ingredients']} 
-      url = {recipe['URL']} 
+      string ingredients = {recipe['Ingredients']}
+      servings = {recipe['Servings']} 
+      method = {recipe['Method']} 
       image = {recipe['Picture_URL']} />))}
     </section>
   </div>
   );
-        
+          
 }
 
 export default App;
