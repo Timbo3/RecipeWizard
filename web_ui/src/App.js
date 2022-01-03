@@ -1,7 +1,6 @@
 import React, {useEffect, useState} from "react";
-import {Card,Button} from 'react-bootstrap'
+import {Card,Button,Form} from 'react-bootstrap'
 import 'bootstrap/dist/css/bootstrap.min.css'
-import {Form} from 'react-bootstrap'
 import style from './style.module.css';
 import Select, { createFilter, } from 'react-select';
 
@@ -10,20 +9,17 @@ function App() {
 
   const [valid_ingredient_list, setIngredients] = useState([]);
   let ingredients_query_string_for_api = '';
-  let users_maximum_ingredients = 12;
   let [users_selected_ingredients_array, updateUsersSelectedIngredients] = useState([]);
   const [recipe_results_from_api, setRecipes] = useState([]);
+  let users_maximum_ingredients =15
 
-
-  useEffect(() => {
-    getvalidingredientapiresponse();
-  }, []);
-
+  useEffect(() => {getvalidingredientapiresponse();}, []);
   const getvalidingredientapiresponse = async () => {
     var apiresponse = await fetch(`http://192.168.0.18:8000/valid_ingredient_list/`)
     const validingredientapiresponse = await apiresponse.json();
     setIngredients(validingredientapiresponse.Ingredients);
   }
+  var options = valid_ingredient_list.map(option => ({value: option,label: option}));
 
   useEffect(() => {
     if (users_selected_ingredients_array != 0) {
@@ -32,12 +28,10 @@ function App() {
     }
   }, [users_selected_ingredients_array]);
 
-
-  var options = valid_ingredient_list.map(option => ({value: option,label: option}));
-
   const updateUsersMaximumIngredientsSetting = e => {
     if (users_selected_ingredients_array != 0) {
-      users_maximum_ingredients = (e.target.value); 
+      users_maximum_ingredients = e.target.value
+      console.log('max ingredients set to '+users_maximum_ingredients)
       ingredients_query_string_for_api = (users_selected_ingredients_array.map(e => e.value).join(','))
       getrecipeapiresponse(); 
     }
@@ -45,52 +39,67 @@ function App() {
 
   const getrecipeapiresponse = async () => {
     var url = 'http://192.168.0.18:8000/search_recipes_by_ingredients/'+ingredients_query_string_for_api+"/"+users_maximum_ingredients
-    console.log('Attempting to get API response using URL '+url)
     var apiresponse = await fetch(url)
     const data = await apiresponse.json();
     setRecipes(data.Recipes);  
   }
 
+  const ShowRecipePopup = e => {
+    var modal = document.getElementById("recipePopupForRecipeID"+e.target.id);   
+    modal.style.display = "block"; 
+  }
 
-  const Recipe_result = ({title,ingredients,servings,method,image}) => {
+  const CloseRecipePopup = e => {
+    var modal = document.getElementById("recipePopupForRecipeID"+e.target.id);
+    modal.style.display = "none";
+  }
+
+
+  const Recipe_result = ({recipeID,title,ingredients,servings,method,image}) => {
+
+    let ingredientsForPopup = ingredients.replace(/<ingredient>/g, '<li>')
+    ingredientsForPopup = ingredientsForPopup.replace(/<\/ingredient>/g, '</li>')
     ingredients = ingredients.replace(/<ingredient>/g, '')
     ingredients = ingredients.replace(/<\/ingredient>/g, '. ')
-    method = method.replace(/\<step1>*/g, '1. ')
-    method = method.replace(/\<\/step1>*/g, '')
-    method = method.replace(/\<step2>*/g, ' 2. ')
-    method = method.replace(/\<\/step2>*/g, '')
-    method = method.replace(/\<step3>*/g, ' 3. ')
-    method = method.replace(/\<\/step3>*/g, '')
-    method = method.replace(/\<step4>*/g, ' 4. ')
-    method = method.replace(/\<\/step4>*/g, '')
-    method = method.replace(/\<step5>*/g, ' 5. ')
-    method = method.replace(/\<\/step5>*/g, '')
-    method = method.replace(/\<step6>*/g, ' 6. ')
-    method = method.replace(/\<\/step6>*/g, '')
-    method = method.replace(/\<step7>*/g, ' 7. ')
-    method = method.replace(/\<\/step7>*/g, '')
-    method = method.replace(/\<step8>*/g, ' 8. ')
-    method = method.replace(/\<\/step8>*/g, '')
-    method = method.replace(/\<step9>*/g, ' 9. ')
-    method = method.replace(/\<\/step9>*/g, '')
-    method = method.replace(/\<step10>*/g, ' 10. ')
-    method = method.replace(/\<\/step10>*/g, '')
+
+    method = method.replace(/step/g, '')
+    for (var i = 0; i < 20; i++) {
+      var regexfindvalue = new RegExp("<[" + i + "]>", "g")
+      var regexreplacevalue = "<p><b>"+i+". </b>" 
+      method = method.replace(regexfindvalue, regexreplacevalue)
+      regexfindvalue = new RegExp("<\/[" + i + "]>", "g")
+      regexreplacevalue = "</p>" 
+      method = method.replace(regexfindvalue, regexreplacevalue)
+    }
 
     return(
-        
-        <Card className={style.recipe}>          
-            <Card.Img className={style.recipe_picture} src={image}/>
+
+        <Card className={style.recipe} >                 
             <Card.Body>
-                <Card.Title>{title}</Card.Title>
-                <Card.Text><b>Ingredients: </b><i>{ingredients}</i></Card.Text>
-                <Card.Text><b>Serves: </b><i>{servings}</i></Card.Text>
-                <Card.Text><details><summary>Method</summary>{method}</details></Card.Text>
+                <Card.Title >{title}</Card.Title>
+                <Card.Img className={style.recipe_picture} src={image}/>
+                <Card.Text><b>Ingredients: </b>({servings}) <i>{ingredients.replace(/<li>/g, '')}</i></Card.Text>
+                <Button  id={recipeID} onClick={ShowRecipePopup}>View Recipe</Button>
             </Card.Body> 
+
+            <div id={"recipePopupForRecipeID"+recipeID} className={style.modal}>
+              <div className={style.modalcontent}>
+              <span id={recipeID} className={style.close} onClick={CloseRecipePopup}>&times;</span>
+             <p className={style.recipe_popup_title}><b>{title}</b></p>
+             <img className={style.recipe_picture} src={image}/>
+            
+             <p><b>Ingredients </b>({servings})</p>
+             <div dangerouslySetInnerHTML={{ __html: ingredientsForPopup }}></div><p>&nbsp;</p>
+             <p><b>Method: </b></p>
+             {/* <div>{method}</div> */}
+             <div dangerouslySetInnerHTML={{ __html: method }}></div>
+             </div>
+             </div>
+
         </Card>
 
     )
   }
-
   
   return (              
   <div className = "App">
@@ -102,22 +111,22 @@ function App() {
           Search through thousands of recipes using ingredient combinations. Get recipe ideas, use up leftover ingredients. 
         </div>
         <Form className = "search-form">  
-          <Select 
+        <Select 
           options={options} 
           filterOption={createFilter({ignoreAccents: false})}
           isMulti className = {style.IngredientsSelector}    
           onChange ={updateUsersSelectedIngredients} 
           autoFocus={true}
           placeholder={<div>Start typing some ingredient names</div>}  
-          /> 
+          />
           <div className={style.MaxIngredientsSelectorContainer}>
-            <label htmlFor="maximum_ingredients" className={style.help_text}>Recipe Complexity</label>
+            <label htmlFor="maximum_ingredients" className={style.help_text}>Recipe Complexity:</label>
             <input 
             id="maximum_ingredients"
             type="range" 
             className = {style.MaxIngredientsSelector} 
             defaultValue={15}
-            min="1" max="100"
+            min="1" max="25"
             onChange ={updateUsersMaximumIngredientsSetting}>
             </input>
           </div>
@@ -125,8 +134,9 @@ function App() {
     </section>
     
     <section className = {style.Recipes_Area}> 
-      {recipe_results_from_api.map(recipe => (<Recipe_result 
+      {recipe_results_from_api.map((recipe,index) => (<Recipe_result
       key = {recipe['ID']} 
+      recipeID= {recipe['ID']} 
       title = {recipe['Title']} 
       string ingredients = {recipe['Ingredients']}
       servings = {recipe['Servings']} 

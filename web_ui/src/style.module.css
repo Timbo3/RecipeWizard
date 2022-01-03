@@ -59,21 +59,64 @@ body {
 
 .Recipes_Area {
     text-align: center;
-    margin:2%
 }
 
 .recipe  {
     display: inline-block;
     vertical-align: middle;
-    width: 250px;
-    margin:2%;
+    margin: 2%;
+    min-width: 250px;
+    max-width: 300px;
     text-align: center;
     background-color: #FFFFFF;
     padding: 1%;
  }
 
+
+ .modal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1; /* Sit on top */
+    padding-top: 100px; /* Location of the box */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgb(0,5,0); /* Fallback color */
+    background-color: rgba(0,5,0,0.4); /* Black w/ opacity */
+  }
+
+ .modalcontent {
+    background-color: #fefefe;
+    margin: auto;
+    padding: 20px;
+    border: 1px solid #888;
+    max-width: 700px;
+  }
+  
+  /* The Close Button */
+  .close {
+    color: #aaaaaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+  }
+  
+  .close:hover,
+  .close:focus {
+    color: #000;
+    text-decoration: none;
+    cursor: pointer;
+ }
+
+ .recipe_popup_title{
+
+    font-size: 20px;
+ }
+
 .recipe_picture {
-    width:100%; 
+    max-width: 300px;
     height:auto; 
     margin-bottom: 10px; 
     border: 0px; 
@@ -84,3 +127,4 @@ body {
     margin: 3% ;
 }
 
+.li {  white-space: nowrap; }
