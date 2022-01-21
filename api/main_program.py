@@ -54,7 +54,7 @@ def FindRecipesByIngredientMatches(UsersIngredientList, MaximumIngredientsInReci
     CleanedandSortedRecipeIDListString = CleanedandSortedRecipeIDListString[:-1]
     runtime = round(time.time() - start_time, 2)
     print ("Sorting the recipe ID list by frequency, removing duplicates, limiting to 500 ID's, converting to a string took ", runtime," seconds to run")
-    sqlquery = "select id,name,different_ingredients,ingredient_list,servings,method,picture_url from recipe where id IN ("+CleanedandSortedRecipeIDListString+") AND (recipe.different_ingredients <="+MaximumIngredientsInRecipes+")"
+    sqlquery = "select id,name,different_ingredients,ingredient_list,servings,method,picture_url from recipe where id IN ("+CleanedandSortedRecipeIDListString+") AND (recipe.different_ingredients <="+MaximumIngredientsInRecipes+") LIMIT 100"
     cursor = db.cursor()
     cursor.execute(sqlquery)        
     RecipeResultList = cursor.fetchall()
