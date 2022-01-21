@@ -5,7 +5,9 @@ import style from './style.module.css';
 import Select, { createFilter, } from 'react-select';
 
 
+
 function App() {
+
 
   const [valid_ingredient_list, setIngredients] = useState([]);
   let ingredients_query_string_for_api = '';
@@ -55,7 +57,7 @@ function App() {
   }
 
 
-  const Recipe_result = ({recipeID,title,ingredients,servings,method,image}) => {
+  const Recipe_result = ({recipeID,ingredientMatches,title,ingredientCount,ingredients,servings,method,image}) => {
 
     let ingredientsForPopup = ingredients.replace(/<ingredient>/g, '<li>')
     ingredientsForPopup = ingredientsForPopup.replace(/<\/ingredient>/g, '</li>')
@@ -72,11 +74,12 @@ function App() {
       method = method.replace(regexfindvalue, regexreplacevalue)
     }
 
+
     return(
 
         <Card className={style.recipe} >                 
             <Card.Body>
-                <Card.Title >{title}</Card.Title>
+                <Card.Title >{title} ({ingredientMatches}/{ingredientCount})</Card.Title>
                 <Card.Img className={style.recipe_picture} src={image}/>
                 <Card.Text><b>Ingredients: </b>({servings}) <i>{ingredients.replace(/<li>/g, '')}</i></Card.Text>
                 <Button  id={recipeID} onClick={ShowRecipePopup}>View Recipe</Button>
@@ -137,7 +140,9 @@ function App() {
       {recipe_results_from_api.map((recipe,index) => (<Recipe_result
       key = {recipe['ID']} 
       recipeID= {recipe['ID']} 
+      ingredientMatches= {recipe['Ingredient_Matches']} 
       title = {recipe['Title']} 
+      ingredientCount = {recipe['Ingredient_Count']}
       string ingredients = {recipe['Ingredients']}
       servings = {recipe['Servings']} 
       method = {recipe['Method']} 

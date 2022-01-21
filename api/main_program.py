@@ -12,12 +12,11 @@ def GetValidIngredientList():
     db = mysql.connector.connect(**config)
     cursor = db.cursor()
     start_time = time.time()
-    sqlquery = "select name from ingredient"
+    sqlquery = "select display_name from ingredient ORDER BY CHAR_LENGTH(recipe_ids) DESC"
     cursor.execute(sqlquery)        
     ListOfValidIngredientNames = cursor.fetchall()
     print ("Getting list of all different ingredients from database took ", time.time() - start_time," seconds to run")
     return (ListOfValidIngredientNames)
-
 
 
 def FindRecipesByIngredientMatches(UsersIngredientList, MaximumIngredientsInRecipes):
@@ -28,44 +27,62 @@ def FindRecipesByIngredientMatches(UsersIngredientList, MaximumIngredientsInReci
     recipeidlist=()
     counter=0
     while counter<len(UsersIngredientList):
-        cursor.execute("select recipe_ids from ingredient where name = '"+UsersIngredientList[counter]+"'")        
+        cursor.execute("select recipe_ids from ingredient where display_name = '"+UsersIngredientList[counter]+"'")        
         recipeidlist = sum((recipeidlist, cursor.fetchone()), ())
         counter+=1
     cursor.close()
-    recipeidlist = ','.join(recipeidlist)
-    recipeidlist = list(recipeidlist.split(",")) 
-    # print ("recipeidlist is ", recipeidlist)
-    print ("Getting a list of recipe id's from database for users ingredients took ", time.time() - start_time," seconds to run")
-    start_time = time.time()
+    recipeidlist = ''.join(recipeidlist)   
+    recipeidlist=recipeidlist.replace("</id>","")
+    recipeidlist = list(recipeidlist.split("<id>")) 
+    recipeidlist.pop(0)
+    runtime = round(time.time() - start_time, 2)
+    print ("Getting list of recipe ID's from database for users ingredients took ", runtime," seconds to run")
+    start_time = time.time()  
     CleanedandSortedRecipeIDList = [item for items, c in Counter(recipeidlist).most_common()
     for item in [items] * c]
-    CleanedandSortedRecipeIDList = list(dict.fromkeys(CleanedandSortedRecipeIDList))
+    my_dict = {i:CleanedandSortedRecipeIDList.count(i) for i in CleanedandSortedRecipeIDList}
+    CleanedandSortedRecipeIDList = list(my_dict.items())
     CleanedandSortedRecipeIDListLength = len(CleanedandSortedRecipeIDList)
     if CleanedandSortedRecipeIDListLength>500:
-        print ("Shortening List to 500 items..")
         CleanedandSortedRecipeIDList= CleanedandSortedRecipeIDList[0:500]       
-    print ("Length of recipe id list is ",len(CleanedandSortedRecipeIDList))
-    print ("Sorting recipe id list, removing duplicates, limiting to 500 id's the took ", time.time() - start_time," seconds to run")
     start_time = time.time()
-    CleanedandSortedRecipeIDList= ','.join(CleanedandSortedRecipeIDList)
-    sqlquery = "select id,name,ingredient_list,servings,method,picture_url from recipe where id IN ("+CleanedandSortedRecipeIDList+") AND (recipe.different_ingredients <="+MaximumIngredientsInRecipes+")"
-    CleanedandSortedRecipeIDListWithoutSpeechMarks = CleanedandSortedRecipeIDList.replace("'","")
-    sqlquery = sqlquery + " ORDER BY FIND_IN_SET(id,'"+CleanedandSortedRecipeIDListWithoutSpeechMarks+"'), picture_url ASC"
-    print ("Querying database recipe table for recipes..")
-    #print ("SQL Query is ", sqlquery)
+    counter = 0
+    CleanedandSortedRecipeIDListString=""
+    while counter<len(CleanedandSortedRecipeIDList):
+        CleanedandSortedRecipeIDListString= CleanedandSortedRecipeIDListString+CleanedandSortedRecipeIDList[counter][0]+","
+        counter = counter+1
+    CleanedandSortedRecipeIDListString = CleanedandSortedRecipeIDListString[:-1]
+    runtime = round(time.time() - start_time, 2)
+    print ("Sorting the recipe ID list by frequency, removing duplicates, limiting to 500 ID's, converting to a string took ", runtime," seconds to run")
+    sqlquery = "select id,name,different_ingredients,ingredient_list,servings,method,picture_url from recipe where id IN ("+CleanedandSortedRecipeIDListString+") AND (recipe.different_ingredients <="+MaximumIngredientsInRecipes+")"
     cursor = db.cursor()
     cursor.execute(sqlquery)        
-    print ("Loading results from database into list.")
     RecipeResultList = cursor.fetchall()
-    print ("Querying the database with the recipe id list took ", time.time() - start_time," seconds to run")
+    runtime = round(time.time() - start_time, 2)
+    print ("Getting recipe information from database with the recipe ID list took ", runtime," seconds to run")
     cursor.close()
-    #print (RecipeResultList)
+    start_time = time.time()
+    RecipeResultList = [list(elem) for elem in RecipeResultList]
+    counter=0
+    usersingredientfrequency =""
+    while counter<len(RecipeResultList):
+        recipeid = str(RecipeResultList[counter][0])
+        counter2=0
+        while counter2<len(CleanedandSortedRecipeIDList):
+            if str(CleanedandSortedRecipeIDList[counter2][0])==recipeid:
+                usersingredientfrequency = CleanedandSortedRecipeIDList[counter2][1]
+                break
+            counter2=counter2+1
+        RecipeResultList[counter].insert(1,usersingredientfrequency)
+        counter = counter+1
+    RecipeResultList=sorted(RecipeResultList,key=lambda x: (x[1],x[7],-x[3]), reverse=True)
+    runtime = round(time.time() - start_time, 2)
+    print ("Inserting Users ingredient frequency into recipe results and sorting took ", runtime," seconds to run")
     return (RecipeResultList)
-
+    
 
 app = FastAPI()
 app.add_middleware(CORSMiddleware,allow_origins=["*"],allow_credentials=True,allow_methods=["*"],allow_headers=["*"])
-
 
 
 @app.get("/valid_ingredient_list/")
@@ -79,7 +96,9 @@ maximum_ingredients_for_recipes:str = Path(None, description = "Integer value fo
 
      class Recipe(BaseModel):
           ID: str
+          Ingredient_Matches: str
           Title: str
+          Ingredient_Count: str
           Ingredients: str
           Servings: str
           Method: str
@@ -87,8 +106,8 @@ maximum_ingredients_for_recipes:str = Path(None, description = "Integer value fo
 
 
      db_tuple_with_recipe_results = FindRecipesByIngredientMatches(user_ingredient_list, maximum_ingredients_for_recipes)
-     recipes = [Recipe(ID=ID, Title=Title, Ingredients=Ingredients, Servings=Servings, Method=Method, Picture_URL=Picture_URL) 
-     for ID, Title, Ingredients, Servings, Method, Picture_URL in db_tuple_with_recipe_results]
+     recipes = [Recipe(ID=ID, Ingredient_Matches=Ingredient_Matches, Title=Title, Ingredient_Count=Ingredient_Count, Ingredients=Ingredients, Servings=Servings, Method=Method, Picture_URL=Picture_URL) 
+     for ID, Ingredient_Matches, Title, Ingredient_Count,Ingredients,Servings, Method, Picture_URL in db_tuple_with_recipe_results]
      return {"Recipes": recipes}
 
 
