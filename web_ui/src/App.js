@@ -65,14 +65,10 @@ function App() {
     ingredients = ingredients.replace(/<\/ingredient>/g, '. ')
 
     method = method.replace(/step/g, '')
-    for (var i = 0; i < 20; i++) {
-      var regexfindvalue = new RegExp("<[" + i + "]>", "g")
-      var regexreplacevalue = "<p><b>"+i+". </b>" 
-      method = method.replace(regexfindvalue, regexreplacevalue)
-      regexfindvalue = new RegExp("<\/[" + i + "]>", "g")
-      regexreplacevalue = "</p>" 
-      method = method.replace(regexfindvalue, regexreplacevalue)
-    }
+    for (var i = 0; i < 30; i++) { 
+       method = method.replace("<"+i+">", "<p><b>"+i+". </b>")
+       method = method.replace("<\/"+i+">", "</p>")
+     }
 
 
     return(
@@ -117,13 +113,14 @@ function App() {
         <Select 
           options={options} 
           filterOption={createFilter({ignoreAccents: false})}
+          components={{ DropdownIndicator:() => null, IndicatorSeparator:() => null }}
           isMulti className = {style.IngredientsSelector}    
           onChange ={updateUsersSelectedIngredients} 
-          autoFocus={true}
+          autoFocus
           placeholder={<div>Start typing some ingredient names</div>}  
           />
           <div className={style.MaxIngredientsSelectorContainer}>
-            <label htmlFor="maximum_ingredients" className={style.help_text}>Recipe Complexity:</label>
+            <label htmlFor="maximum_ingredients" className={style.recipe_complexity_text}>Recipe Complexity:</label>
             <input 
             id="maximum_ingredients"
             type="range" 

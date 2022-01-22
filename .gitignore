@@ -2,3 +2,4 @@ database_maintenance
 api/__pycache__
 web_ui/node_modules/
 testing/cucumber_and_cypress/node_modules/
+api/database_connection_details.py

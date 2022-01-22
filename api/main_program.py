@@ -20,9 +20,10 @@ def GetValidIngredientList():
 
 
 def FindRecipesByIngredientMatches(UsersIngredientList, MaximumIngredientsInRecipes):
+    
+    start_time = time.time()
     db = mysql.connector.connect(**config)
     cursor = db.cursor()
-    start_time = time.time()
     UsersIngredientList= UsersIngredientList.split(",")
     recipeidlist=()
     counter=0
@@ -37,14 +38,18 @@ def FindRecipesByIngredientMatches(UsersIngredientList, MaximumIngredientsInReci
     recipeidlist.pop(0)
     runtime = round(time.time() - start_time, 2)
     print ("Getting list of recipe ID's from database for users ingredients took ", runtime," seconds to run")
+
     start_time = time.time()  
-    CleanedandSortedRecipeIDList = [item for items, c in Counter(recipeidlist).most_common()
-    for item in [items] * c]
-    my_dict = {i:CleanedandSortedRecipeIDList.count(i) for i in CleanedandSortedRecipeIDList}
-    CleanedandSortedRecipeIDList = list(my_dict.items())
-    CleanedandSortedRecipeIDListLength = len(CleanedandSortedRecipeIDList)
-    if CleanedandSortedRecipeIDListLength>500:
-        CleanedandSortedRecipeIDList= CleanedandSortedRecipeIDList[0:500]       
+    CleanedandSortedRecipeIDList = Counter(recipeidlist).most_common()
+    runtime = round(time.time() - start_time, 2)
+    print ("Sorting the recipe ID list by frequency then removing duplicates took ", runtime," seconds to run")
+
+    start_time = time.time()
+    if len(CleanedandSortedRecipeIDList)>500:
+        CleanedandSortedRecipeIDList= CleanedandSortedRecipeIDList[0:500]     
+    runtime = round(time.time() - start_time, 2)
+    print ("Limiting recipe ID list to 500 items took ", runtime," seconds to run")
+
     start_time = time.time()
     counter = 0
     CleanedandSortedRecipeIDListString=""
@@ -53,14 +58,16 @@ def FindRecipesByIngredientMatches(UsersIngredientList, MaximumIngredientsInReci
         counter = counter+1
     CleanedandSortedRecipeIDListString = CleanedandSortedRecipeIDListString[:-1]
     runtime = round(time.time() - start_time, 2)
-    print ("Sorting the recipe ID list by frequency, removing duplicates, limiting to 500 ID's, converting to a string took ", runtime," seconds to run")
+    print ("Building a string from all the recipe ID's for the SQL statement took ", runtime," seconds to run")
+
+    start_time = time.time() 
     sqlquery = "select id,name,different_ingredients,ingredient_list,servings,method,picture_url from recipe where id IN ("+CleanedandSortedRecipeIDListString+") AND (recipe.different_ingredients <="+MaximumIngredientsInRecipes+") LIMIT 100"
     cursor = db.cursor()
     cursor.execute(sqlquery)        
     RecipeResultList = cursor.fetchall()
     runtime = round(time.time() - start_time, 2)
     print ("Getting recipe information from database with the recipe ID list took ", runtime," seconds to run")
-    cursor.close()
+    
     start_time = time.time()
     RecipeResultList = [list(elem) for elem in RecipeResultList]
     counter=0
@@ -78,6 +85,7 @@ def FindRecipesByIngredientMatches(UsersIngredientList, MaximumIngredientsInReci
     RecipeResultList=sorted(RecipeResultList,key=lambda x: (x[1],x[7],-x[3]), reverse=True)
     runtime = round(time.time() - start_time, 2)
     print ("Inserting Users ingredient frequency into recipe results and sorting took ", runtime," seconds to run")
+    
     return (RecipeResultList)
     
 
