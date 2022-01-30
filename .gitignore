@@ -1,5 +1,7 @@
 database_maintenance
 api/__pycache__
 web_ui/node_modules/
+web_ui/public/recipe_images
+web_ui/build
 testing/cucumber_and_cypress/node_modules/
-api/database_connection_details.py
+database_connection_details.py

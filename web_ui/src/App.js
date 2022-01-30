@@ -20,6 +20,7 @@ function App() {
     var apiresponse = await fetch(`http://192.168.0.18:8000/valid_ingredient_list/`)
     const validingredientapiresponse = await apiresponse.json();
     setIngredients(validingredientapiresponse.Ingredients);
+
   }
   var options = valid_ingredient_list.map(option => ({value: option,label: option}));
 
@@ -29,6 +30,7 @@ function App() {
       getrecipeapiresponse();
     }
   }, [users_selected_ingredients_array]);
+
 
   const updateUsersMaximumIngredientsSetting = e => {
     if (users_selected_ingredients_array != 0) {
@@ -44,6 +46,7 @@ function App() {
     var apiresponse = await fetch(url)
     const data = await apiresponse.json();
     setRecipes(data.Recipes);  
+      
   }
 
   const ShowRecipePopup = e => {
@@ -54,6 +57,22 @@ function App() {
   const CloseRecipePopup = e => {
     var modal = document.getElementById("recipePopupForRecipeID"+e.target.id);
     modal.style.display = "none";
+  }
+
+
+  const customStyles = {
+    option: (provided, state) => ({
+      padding: 6,
+      borderBottom: '1px dotted grey',
+    }),
+    control: () => ({
+      padding:5,
+      border: '1px solid grey',
+      minHeight:100
+    }),
+    singleValue: (provided, state) => {
+
+    }
   }
 
 
@@ -76,7 +95,7 @@ function App() {
         <Card className={style.recipe} >                 
             <Card.Body>
                 <Card.Title >{title} ({ingredientMatches}/{ingredientCount})</Card.Title>
-                <Card.Img className={style.recipe_picture} src={image}/>
+                <Card.Img className={style.recipe_picture} src={image}  />
                 <Card.Text><b>Ingredients: </b>({servings}) <i>{ingredients.replace(/<li>/g, '')}</i></Card.Text>
                 <Button  id={recipeID} onClick={ShowRecipePopup}>View Recipe</Button>
             </Card.Body> 
@@ -85,7 +104,7 @@ function App() {
               <div className={style.modalcontent}>
               <span id={recipeID} className={style.close} onClick={CloseRecipePopup}>&times;</span>
              <p className={style.recipe_popup_title}><b>{title}</b></p>
-             <img className={style.recipe_picture} src={image}/>
+             <img className={style.recipe_picture} src={image} onError={(event) => event.target.style.display = 'none'}/>
             
              <p><b>Ingredients </b>({servings})</p>
              <div dangerouslySetInnerHTML={{ __html: ingredientsForPopup }}></div><p>&nbsp;</p>
@@ -106,19 +125,23 @@ function App() {
         <div >
           <h1 className={style.logo_text}>Recipe<span className={style.wizard_logo_text}>Wizard</span ></h1>
         </div>
-        <div className={style.help_text}>
-          Search through thousands of recipes using ingredient combinations. Get recipe ideas, use up leftover ingredients. 
+        <div className={style.help_text} id={"helptext"}  >
+          Search through thousands of recipes using ingredient combinations. Use up leftover ingredients and get recipe ideas.
         </div>
-        <Form className = "search-form">  
-        <Select 
+        <Form  className = "search-form"  >  
+
+        <Select           
           options={options} 
           filterOption={createFilter({ignoreAccents: false})}
           components={{ DropdownIndicator:() => null, IndicatorSeparator:() => null }}
-          isMulti className = {style.IngredientsSelector}    
+          isMulti className = {style.IngredientsSelector} 
           onChange ={updateUsersSelectedIngredients} 
-          autoFocus
-          placeholder={<div>Start typing some ingredient names</div>}  
+          isClearable={false}
+          styles={customStyles}
+          autoFocus={true}
+          placeholder={<div className={style.select_placeholder}>Start typing some ingredient names</div>}  
           />
+
           <div className={style.MaxIngredientsSelectorContainer}>
             <label htmlFor="maximum_ingredients" className={style.recipe_complexity_text}>Recipe Complexity:</label>
             <input 

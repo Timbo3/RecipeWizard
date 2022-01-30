@@ -2,7 +2,7 @@
 
 body {
     font-family: 'Roboto', Roboto;
-    margin:2% ;
+    margin:1% ;
 }
 
 .Top_Bar {    
@@ -11,8 +11,7 @@ body {
 }
 
 .logo_text{
-
-    font-size: 300%;
+    font-size: 250%;
 }
 
 .wizard_logo_text{
@@ -20,17 +19,23 @@ body {
 }
 
 .help_text{
-    font-size: 120%;
+    display: block; 
+    font-size: 110%;
     margin-left: 2%;
     margin-right: 2%;
-    margin-top: 25px;
-    margin-bottom: 25px;
+    margin-top: 15px;
+    margin-bottom: 15px;
 }
 
 .IngredientsSelector{
-    font-size: 220%;
+    font-size: 160%;
     display: inline-block;
-    width:90%
+    width:90%;
+
+}
+
+.select_placeholder {
+    padding-top: 20px;
 }
 
 .MaxIngredientsSelectorContainer{
@@ -39,7 +44,7 @@ body {
 }
 
 .recipe_complexity_text {
-    font-size: 120%;
+    font-size: 110%;
     margin-top: 25px;
     margin-right: 2%;
 }
